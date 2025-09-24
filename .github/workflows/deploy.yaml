@@ -1,4 +1,4 @@
-name: deploy suresh constraction
+name: deploy suresh-constraction
 on:
   workflow_dispatch:   # manual trigger
   push:
