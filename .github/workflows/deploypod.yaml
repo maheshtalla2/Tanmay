@@ -1,4 +1,4 @@
-name: Deploy pods info 
+name: Deploy pods info 301
 on:
   workflow_dispatch:   # manual trigger
   push:
@@ -13,7 +13,7 @@ jobs:
 
       - name: Deploy StudentApp to Kubernetes
         run: |
-          kubectl apply -f app301/k8s old/deployment.yaml
+          kubectl apply -f app301/k8s old/deploy.yaml
           kubectl rollout status deployment/student-app
       - name: Validate my deployemnts 
         run: |
