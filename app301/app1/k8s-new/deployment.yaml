@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: suresh-construction
-        image: <DOCKER_USERNAME>/suresh-construction:latest   # replace with your DockerHub username
+        image: maheshsoft/constraction-app:1.0.0   # replace with your DockerHub username
         ports:
         - containerPort: 80
 ---
@@ -30,3 +30,4 @@ spec:
     - port: 80
       targetPort: 80
   type: NodePort   # Change to LoadBalancer if using cloud provider
+        NodePort:31122
