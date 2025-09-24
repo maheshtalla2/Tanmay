@@ -1,10 +1,9 @@
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: suresh-construction-deployment
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: suresh-construction
@@ -29,5 +28,5 @@ spec:
   ports:
     - port: 80
       targetPort: 80
-  type: NodePort   # Change to LoadBalancer if using cloud provider
-        NodePort:31122
+      nodePort: 31122   # 👈 correctly placed here
+  type: NodePort
