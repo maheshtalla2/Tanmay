@@ -1,4 +1,4 @@
-name: Deploy bussiness 
+name: Deploy pods info 
 on:
   workflow_dispatch:   # manual trigger
   push:
