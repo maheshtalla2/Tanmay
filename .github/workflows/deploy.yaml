@@ -13,7 +13,7 @@ jobs:
 
       - name: Deploy StudentApp to Kubernetes
         run: |
-          kubectl apply -f app301/app1/k8s new/deployment.yaml
+          kubectl apply -f app301/app1/k8s-new/deployment.yaml
           kubectl rollout status deployment/student-app
       - name: Validate my deployemnts 
         run: |
