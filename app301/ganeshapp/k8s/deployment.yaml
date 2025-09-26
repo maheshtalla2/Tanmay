@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ganesh-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ganesh
+  template:
+    metadata:
+      labels:
+        app: ganesh
+    spec:
+      containers:
+      - name: ganesh
+        image: maheshsoft/ganesh-app:1.0.0   # replace with your DockerHub image
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ganesh-service
+spec:
+  selector:
+    app: ganesh
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 31234   # custom NodePort (optional)
+  type: NodePort
