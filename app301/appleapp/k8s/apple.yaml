@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: apple
-        image: maheshsoft/apple-app:v1   # replace with your DockerHub username
+        image: maheshsoft/apple-app:v2   # replace with your DockerHub username
         ports:
         - containerPort: 80
 ---
