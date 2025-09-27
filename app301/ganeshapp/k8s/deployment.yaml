@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: ganesh
-        image: maheshsoft/ganesh-app:1.0.0   # replace with your DockerHub image
+        image: maheshsoft/ganesh-app:version2   # replace with your DockerHub image
         ports:
         - containerPort: 80
 ---
