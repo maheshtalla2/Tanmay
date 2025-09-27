@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Attendance App</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 16px; color:#222; }
+    h1 { text-align:center; color:#2b6cb0; }
+    form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; align-items: end; margin-bottom: 16px; }
+    label { display:block; font-size: 0.9rem; margin-bottom:6px; }
+    input[type="text"], input[type="date"], input[type="number"] { width:100%; padding:8px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px; }
+    .full { grid-column: 1 / -1; display:flex; gap:8px; }
+    button { padding:8px 12px; border: none; background:#2b6cb0; color:white; border-radius:6px; cursor:pointer; }
+    button.secondary { background:#4a5568; }
+    table { width:100%; border-collapse:collapse; margin-top:12px; }
+    th, td { text-align:left; padding:8px; border-bottom:1px solid #eee; font-size:0.95rem; }
+    th { background:#f7fafc; }
+    .actions { display:flex; gap:8px; }
+    .note { color:#555; font-size:0.85rem; margin-top:8px; }
+  </style>
+</head>
+<body>
+  <h1>Attendance App</h1>
+
+  <form id="attForm" onsubmit="return addEntry();">
+    <div>
+      <label for="date">Date</label>
+      <input id="date" name="date" type="date" required>
+    </div>
+
+    <div>
+      <label for="name">Name</label>
+      <input id="name" name="name" type="text" placeholder="Enter name" required>
+    </div>
+
+    <div>
+      <label for="workEnglish">Work Hours (English)</label>
+      <input id="workEnglish" name="workEnglish" type="number" step="0.25" min="0" placeholder="e.g., 2.5" required>
+    </div>
+
+    <div>
+      <label for="practiceEnglish">Practice Hours (English)</label>
+      <input id="practiceEnglish" name="practiceEnglish" type="number" step="0.25" min="0" placeholder="e.g., 1">
+    </div>
+
+    <div>
+      <label for="workSoftware">Work Hours (Software)</label>
+      <input id="workSoftware" name="workSoftware" type="number" step="0.25" min="0" placeholder="e.g., 3">
+    </div>
+
+    <div>
+      <label for="practiceSoftware">Practice Hours (Software)</label>
+      <input id="practiceSoftware" name="practiceSoftware" type="number" step="0.25" min="0" placeholder="e.g., 1.5">
+    </div>
+
+    <div class="full actions">
+      <button type="submit">Add Entry</button>
+      <button type="button" class="secondary" onclick="clearForm()">Clear Form</button>
+      <button type="button" class="secondary" onclick="exportCSV()">Export CSV</button>
+      <button type="button" class="secondary" onclick="clearAll()">Clear All Entries</button>
+    </div>
+  </form>
+
+  <div class="note">Entries will be saved locally in this browser (localStorage).</div>
+
+  <table id="entriesTable" aria-live="polite">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Name</th>
+        <th>Work (Eng)</th>
+        <th>Practice (Eng)</th>
+        <th>Work (Soft)</th>
+        <th>Practice (Soft)</th>
+        <th>Total Hours</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const STORAGE_KEY = 'attendance_entries_v1';
+
+    function loadEntries() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }
+
+    function saveEntries(list) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+
+    function renderTable() {
+      const tbody = document.querySelector('#entriesTable tbody');
+      tbody.innerHTML = '';
+      const entries = loadEntries();
+      entries.forEach((e, idx) => {
+        const tr = document.createElement('tr');
+        const total = (parseFloat(e.workEnglish||0) + parseFloat(e.practiceEnglish||0) + parseFloat(e.workSoftware||0) + parseFloat(e.practiceSoftware||0)).toFixed(2);
+        tr.innerHTML = `
+          <td>${e.date}</td>
+          <td>${escapeHtml(e.name)}</td>
+          <td>${e.workEnglish || 0}</td>
+          <td>${e.practiceEnglish || 0}</td>
+          <td>${e.workSoftware || 0}</td>
+          <td>${e.practiceSoftware || 0}</td>
+          <td>${total}</td>
+          <td><button onclick="removeEntry(${idx})" title="Remove">Remove</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addEntry() {
+      const form = document.getElementById('attForm');
+      const data = {
+        date: form.date.value,
+        name: form.name.value.trim(),
+        workEnglish: form.workEnglish.value || 0,
+        practiceEnglish: form.practiceEnglish.value || 0,
+        workSoftware: form.workSoftware.value || 0,
+        practiceSoftware: form.practiceSoftware.value || 0
+      };
+      // basic validation
+      if (!data.date || !data.name) {
+        alert('Please fill Date and Name.');
+        return false;
+      }
+      const entries = loadEntries();
+      entries.unshift(data); // newest on top
+      saveEntries(entries);
+      renderTable();
+      form.reset();
+      // set date to today for convenience
+      form.date.value = new Date().toISOString().slice(0,10);
+      return false; // prevent real submit
+    }
+
+    function removeEntry(idx) {
+      if (!confirm('Remove this entry?')) return;
+      const entries = loadEntries();
+      entries.splice(idx,1);
+      saveEntries(entries);
+      renderTable();
+    }
+
+    function clearAll() {
+      if (!confirm('Clear ALL entries?')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      renderTable();
+    }
+
+    function clearForm() {
+      document.getElementById('attForm').reset();
+      document.getElementById('date').value = new Date().toISOString().slice(0,10);
+    }
+
+    function exportCSV() {
+      const entries = loadEntries();
+      if (!entries.length) { alert('No entries to export.'); return; }
+      const headers = ['Date','Name','Work(Eng)','Practice(Eng)','Work(Soft)','Practice(Soft)','Total'];
+      const rows = entries.map(e => {
+        const total = (parseFloat(e.workEnglish||0) + parseFloat(e.practiceEnglish||0) + parseFloat(e.workSoftware||0) + parseFloat(e.practiceSoftware||0)).toFixed(2);
+        return [e.date, e.name, e.workEnglish||0, e.practiceEnglish||0, e.workSoftware||0, e.practiceSoftware||0, total];
+      });
+      let csv = headers.join(',') + '\n' + rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `attendance_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // small helper to avoid XSS in table
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // initialize date field and render existing entries
+    (function init() {
+      const dateInput = document.getElementById('date');
+      dateInput.value = new Date().toISOString().slice(0,10);
+      renderTable();
+    })();
+  </script>
+</body>
+</html>
